@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <rect width="900" height="600" fill="#f8fafb" rx="16"/>
+  <text x="450" y="38" text-anchor="middle" font-size="18" font-weight="800" fill="#085041">ShareHood — Entity Relationship Diagram (ERD)</text>
+  <text x="450" y="58" text-anchor="middle" font-size="12" fill="#888">Supabase / PostgreSQL</text>
+
+  <!-- USERS table -->
+  <rect x="30" y="80" width="195" height="230" rx="10" fill="white" stroke="#1D9E75" stroke-width="2"/>
+  <rect x="30" y="80" width="195" height="38" rx="10" fill="#1D9E75"/>
+  <rect x="30" y="106" width="195" height="12" fill="#1D9E75"/>
+  <text x="127" y="104" text-anchor="middle" font-size="13" font-weight="700" fill="white">👤 users</text>
+  <line x1="30" y1="118" x2="225" y2="118" stroke="#eee" stroke-width="1"/>
+  <text x="42" y="136" font-size="11" fill="#1D9E75" font-weight="700">🔑 id</text><text x="160" y="136" font-size="11" fill="#888">uuid PK</text>
+  <line x1="30" y1="143" x2="225" y2="143" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="159" font-size="11" fill="#444">name</text><text x="160" y="159" font-size="11" fill="#888">text</text>
+  <line x1="30" y1="166" x2="225" y2="166" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="182" font-size="11" fill="#444">email</text><text x="160" y="182" font-size="11" fill="#888">text unique</text>
+  <line x1="30" y1="189" x2="225" y2="189" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="205" font-size="11" fill="#444">building</text><text x="160" y="205" font-size="11" fill="#888">text</text>
+  <line x1="30" y1="212" x2="225" y2="212" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="228" font-size="11" fill="#444">karma</text><text x="160" y="228" font-size="11" fill="#888">int default 0</text>
+  <line x1="30" y1="235" x2="225" y2="235" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="251" font-size="11" fill="#444">created_at</text><text x="160" y="251" font-size="11" fill="#888">timestamptz</text>
+  <line x1="30" y1="258" x2="225" y2="258" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="274" font-size="11" fill="#aaa" font-style="italic">→ auth.users(id)</text>
+  <rect x="30" y="295" width="195" height="15" rx="0" fill="#f0fdf8"/>
+  <rect x="30" y="295" width="195" height="15" rx="0" rx="0" ry="0"/>
+  <rect x="30" y="295" width="195" height="15" fill="#f0fdf8"/>
+
+  <!-- ITEMS table -->
+  <rect x="350" y="80" width="210" height="260" rx="10" fill="white" stroke="#378ADD" stroke-width="2"/>
+  <rect x="350" y="80" width="210" height="38" rx="10" fill="#378ADD"/>
+  <rect x="350" y="106" width="210" height="12" fill="#378ADD"/>
+  <text x="455" y="104" text-anchor="middle" font-size="13" font-weight="700" fill="white">📦 items</text>
+  <line x1="350" y1="118" x2="560" y2="118" stroke="#eee" stroke-width="1"/>
+  <text x="362" y="136" font-size="11" fill="#378ADD" font-weight="700">🔑 id</text><text x="480" y="136" font-size="11" fill="#888">uuid PK</text>
+  <line x1="350" y1="143" x2="560" y2="143" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="159" font-size="11" fill="#e53e3e" font-weight="600">🔗 owner_id</text><text x="480" y="159" font-size="11" fill="#888">uuid FK</text>
+  <line x1="350" y1="166" x2="560" y2="166" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="182" font-size="11" fill="#444">title</text><text x="480" y="182" font-size="11" fill="#888">text</text>
+  <line x1="350" y1="189" x2="560" y2="189" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="205" font-size="11" fill="#444">description</text><text x="480" y="205" font-size="11" fill="#888">text</text>
+  <line x1="350" y1="212" x2="560" y2="212" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="228" font-size="11" fill="#444">category</text><text x="480" y="228" font-size="11" fill="#888">text</text>
+  <line x1="350" y1="235" x2="560" y2="235" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="251" font-size="11" fill="#444">image_url</text><text x="480" y="251" font-size="11" fill="#888">text</text>
+  <line x1="350" y1="258" x2="560" y2="258" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="274" font-size="11" fill="#444">status</text><text x="480" y="274" font-size="11" fill="#888">text (enum)</text>
+  <line x1="350" y1="281" x2="560" y2="281" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="362" y="297" font-size="11" fill="#444">created_at</text><text x="480" y="297" font-size="11" fill="#888">timestamptz</text>
+  <text x="362" y="328" font-size="10" fill="#aaa" font-style="italic">status: available|borrowed|reserved</text>
+
+  <!-- BORROW_REQUESTS table -->
+  <rect x="30" y="360" width="230" height="210" rx="10" fill="white" stroke="#EF9F27" stroke-width="2"/>
+  <rect x="30" y="360" width="230" height="38" rx="10" fill="#EF9F27"/>
+  <rect x="30" y="386" width="230" height="12" fill="#EF9F27"/>
+  <text x="145" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="white">📬 borrow_requests</text>
+  <line x1="30" y1="398" x2="260" y2="398" stroke="#eee" stroke-width="1"/>
+  <text x="42" y="416" font-size="11" fill="#EF9F27" font-weight="700">🔑 id</text><text x="180" y="416" font-size="11" fill="#888">uuid PK</text>
+  <line x1="30" y1="423" x2="260" y2="423" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="439" font-size="11" fill="#e53e3e" font-weight="600">🔗 item_id</text><text x="180" y="439" font-size="11" fill="#888">uuid FK</text>
+  <line x1="30" y1="446" x2="260" y2="446" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="462" font-size="11" fill="#e53e3e" font-weight="600">🔗 borrower_id</text><text x="180" y="462" font-size="11" fill="#888">uuid FK</text>
+  <line x1="30" y1="469" x2="260" y2="469" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="485" font-size="11" fill="#444">status</text><text x="180" y="485" font-size="11" fill="#888">text (enum)</text>
+  <line x1="30" y1="492" x2="260" y2="492" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="42" y="508" font-size="11" fill="#444">created_at</text><text x="180" y="508" font-size="11" fill="#888">timestamptz</text>
+  <text x="42" y="548" font-size="10" fill="#aaa" font-style="italic">status: pending|approved|</text>
+  <text x="42" y="560" font-size="10" fill="#aaa" font-style="italic">rejected|returned</text>
+
+  <!-- MESSAGES table -->
+  <rect x="620" y="80" width="250" height="260" rx="10" fill="white" stroke="#D4537E" stroke-width="2"/>
+  <rect x="620" y="80" width="250" height="38" rx="10" fill="#D4537E"/>
+  <rect x="620" y="106" width="250" height="12" fill="#D4537E"/>
+  <text x="745" y="104" text-anchor="middle" font-size="13" font-weight="700" fill="white">💬 messages</text>
+  <line x1="620" y1="118" x2="870" y2="118" stroke="#eee" stroke-width="1"/>
+  <text x="632" y="136" font-size="11" fill="#D4537E" font-weight="700">🔑 id</text><text x="780" y="136" font-size="11" fill="#888">uuid PK</text>
+  <line x1="620" y1="143" x2="870" y2="143" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="632" y="159" font-size="11" fill="#e53e3e" font-weight="600">🔗 sender_id</text><text x="780" y="159" font-size="11" fill="#888">uuid FK</text>
+  <line x1="620" y1="166" x2="870" y2="166" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="632" y="182" font-size="11" fill="#e53e3e" font-weight="600">🔗 receiver_id</text><text x="780" y="182" font-size="11" fill="#888">uuid FK</text>
+  <line x1="620" y1="189" x2="870" y2="189" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="632" y="205" font-size="11" fill="#e53e3e" font-weight="600">🔗 item_id</text><text x="780" y="205" font-size="11" fill="#888">uuid FK nullable</text>
+  <line x1="620" y1="212" x2="870" y2="212" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="632" y="228" font-size="11" fill="#444">message</text><text x="780" y="228" font-size="11" fill="#888">text</text>
+  <line x1="620" y1="235" x2="870" y2="235" stroke="#f5f5f5" stroke-width="1"/>
+  <text x="632" y="251" font-size="11" fill="#444">created_at</text><text x="780" y="251" font-size="11" fill="#888">timestamptz</text>
+
+  <!-- RELATIONSHIPS -->
+  <!-- users → items (owner_id) -->
+  <path d="M225 165 Q290 165 350 165" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <circle cx="225" cy="165" r="4" fill="#378ADD"/>
+  <circle cx="350" cy="165" r="4" fill="#378ADD"/>
+  <text x="272" y="158" font-size="10" fill="#378ADD" text-anchor="middle">1</text>
+  <text x="340" y="158" font-size="10" fill="#378ADD" text-anchor="middle">N</text>
+
+  <!-- items → borrow_requests (item_id) -->
+  <path d="M455 340 L455 380 Q455 400 400 410 L260 410" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <circle cx="455" cy="340" r="4" fill="#EF9F27"/>
+  <circle cx="260" cy="410" r="4" fill="#EF9F27"/>
+  <text x="460" y="360" font-size="10" fill="#EF9F27">1</text>
+  <text x="270" y="405" font-size="10" fill="#EF9F27">N</text>
+
+  <!-- users → borrow_requests (borrower_id) -->
+  <path d="M145 310 L145 360" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <circle cx="145" cy="310" r="4" fill="#EF9F27"/>
+  <circle cx="145" cy="360" r="4" fill="#EF9F27"/>
+  <text x="152" y="330" font-size="10" fill="#EF9F27">1</text>
+  <text x="152" y="356" font-size="10" fill="#EF9F27">N</text>
+
+  <!-- users → messages (sender/receiver) -->
+  <path d="M225 140 Q420 100 620 140" fill="none" stroke="#D4537E" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <circle cx="225" cy="140" r="4" fill="#D4537E"/>
+  <circle cx="620" cy="140" r="4" fill="#D4537E"/>
+  <text x="390" y="116" font-size="10" fill="#D4537E" text-anchor="middle">sender/receiver</text>
+
+  <!-- items → messages (item_id optional) -->
+  <path d="M560 228 Q590 228 620 210" fill="none" stroke="#D4537E" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <circle cx="560" cy="228" r="4" fill="#D4537E"/>
+  <circle cx="620" cy="210" r="4" fill="#D4537E"/>
+
+  <!-- Legend -->
+  <rect x="30" y="570" width="840" height="24" rx="6" fill="#f0fdf8" stroke="#9FE1CB" stroke-width="1"/>
+  <text x="50" y="586" font-size="11" fill="#555">🔑 Primary Key</text>
+  <text x="180" y="586" font-size="11" fill="#555">🔗 Foreign Key</text>
+  <text x="310" y="586" font-size="11" fill="#555">--- Relationship line</text>
+  <text x="450" y="586" font-size="11" fill="#555">RLS enabled on all tables</text>
+  <text x="650" y="586" font-size="11" fill="#555">Storage: Supabase bucket "items"</text>
+</svg>
