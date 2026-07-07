@@ -27,3 +27,6 @@ npm-debug.log*
 
 .vercel
 .env*
+
+# Claude Code local session state
+/.claude/

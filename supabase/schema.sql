@@ -98,6 +98,35 @@ create policy "Users can view own messages" on public.messages
 create policy "Users can send messages" on public.messages
   for insert with check (auth.uid() = sender_id);
 
+-- Auto-create the public.users profile row whenever a new auth user signs up.
+-- Runs as SECURITY DEFINER so it works even when email confirmation is
+-- pending and the client has no authenticated session yet (in which case
+-- a client-side insert would be blocked by the RLS policies above).
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.users (id, name, email, building, karma)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    new.email,
+    coalesce(new.raw_user_meta_data->>'building', ''),
+    0
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
 -- Storage bucket policy (run after creating 'items' bucket in dashboard)
 -- insert into storage.buckets (id, name, public) values ('items', 'items', true);
 -- create policy "Anyone can view item images" on storage.objects for select using (bucket_id = 'items');

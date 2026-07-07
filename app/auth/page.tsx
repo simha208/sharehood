@@ -9,31 +9,43 @@ function AuthForm() {
   const [tab, setTab] = useState<'login'|'register'>(params.get('tab') === 'register' ? 'register' : 'login')
   const [form, setForm] = useState({ name:'', email:'', password:'', building:'' })
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const handleLogin = async () => {
-    setError(''); setLoading(true)
+    setError(''); setInfo(''); setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
     if (error) { setError(error.message); setLoading(false); return }
     router.push('/dashboard')
   }
 
   const handleRegister = async () => {
-    setError(''); setLoading(true)
+    setError(''); setInfo(''); setLoading(true)
     if (!form.name || !form.email || !form.password || !form.building) {
       setError('Please fill in all fields'); setLoading(false); return
     }
     if (form.password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return }
-    const { data, error } = await supabase.auth.signUp({ email: form.email, password: form.password })
+    // Clear any existing session first — otherwise, if email confirmation is
+    // required, signUp won't establish a new session and the previous
+    // account (e.g. a demo login) would stay active and land on /dashboard.
+    await supabase.auth.signOut()
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { name: form.name, building: form.building } }
+    })
     if (error) { setError(error.message); setLoading(false); return }
-    if (data.user) {
-      const { error: dbErr } = await supabase.from('users').insert({
-        id: data.user.id, name: form.name, email: form.email, building: form.building, karma: 0
-      })
-      if (dbErr) { setError(dbErr.message); setLoading(false); return }
+    // The public.users row is created server-side by a database trigger
+    // (see supabase/schema.sql) so it works even before email confirmation.
+    if (!data.session) {
+      setLoading(false)
+      setTab('login')
+      setForm(f => ({ ...f, password: '' }))
+      setInfo('✅ Account created! Check your email to confirm your account, then log in.')
+      return
     }
     router.push('/dashboard')
   }
@@ -51,7 +63,7 @@ function AuthForm() {
         {/* Tab switcher */}
         <div style={{ display: 'flex', background: '#f4f4f4', borderRadius: 12, padding: 4, marginBottom: 24, gap: 4 }}>
           {(['login', 'register'] as const).map(t => (
-            <button key={t} onClick={() => { setTab(t); setError('') }} style={{
+            <button key={t} onClick={() => { setTab(t); setError(''); setInfo('') }} style={{
               flex: 1, padding: '11px', borderRadius: 9, border: 'none', cursor: 'pointer',
               background: tab === t ? 'white' : 'transparent',
               color: tab === t ? '#1D9E75' : '#888',
@@ -65,6 +77,7 @@ function AuthForm() {
         </div>
 
         {error && <div className="error-box" style={{ marginBottom: 16 }}>⚠️ {error}</div>}
+        {info && <div style={{ background: '#E1F5EE', color: '#0F6E56', border: '1px solid #9FE1CB', borderRadius: 10, padding: '12px 14px', fontSize: 14, marginBottom: 16 }}>{info}</div>}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {tab === 'register' && (
