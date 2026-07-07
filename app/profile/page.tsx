@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import BottomNav from '@/components/BottomNav'
@@ -34,6 +34,17 @@ export default function Profile() {
       setLoading(false)
     }
     init()
+  }, [])
+
+  // Reset cached state when this page is hidden (Activity), so the next
+  // signed-in user never sees a flash of the previous user's profile data.
+  useLayoutEffect(() => {
+    return () => {
+      setUser(null)
+      setMyBorrows([])
+      setItemCount(0)
+      setLoading(true)
+    }
   }, [])
 
   const signOut = async () => { await supabase.auth.signOut(); router.push('/') }

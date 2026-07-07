@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import BottomNav from '@/components/BottomNav'
@@ -35,6 +35,16 @@ export default function MyItems() {
       setLoading(false)
     }
     init()
+  }, [])
+
+  // Reset cached state when this page is hidden (Activity), so the next
+  // signed-in user never sees a flash of the previous user's items/requests.
+  useLayoutEffect(() => {
+    return () => {
+      setItems([])
+      setRequests([])
+      setLoading(true)
+    }
   }, [])
 
   const handleRequest = async (req: RequestWithRelations, action: 'approved'|'rejected') => {

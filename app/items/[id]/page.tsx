@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import BottomNav from '@/components/BottomNav'
@@ -37,6 +37,17 @@ export default function ItemDetails() {
     }
     init()
   }, [id])
+
+  // Reset cached per-user state when this page is hidden (Activity), so the
+  // next signed-in user never sees a flash of the previous user's identity
+  // or borrow-request status for this item.
+  useLayoutEffect(() => {
+    return () => {
+      setMe(null)
+      setMyReq(null)
+      setLoading(true)
+    }
+  }, [])
 
   const requestBorrow = async () => {
     if (!me || !item) return

@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import BottomNav from '@/components/BottomNav'
@@ -52,6 +52,19 @@ function MessagesInner() {
       setLoading(false)
     }
     init()
+  }, [])
+
+  // Reset cached state when this page is hidden (Activity), so the next
+  // signed-in user never sees a flash of the previous user's conversations.
+  useLayoutEffect(() => {
+    return () => {
+      setMe(null)
+      setConvos([])
+      setActiveUser(null)
+      setMessages([])
+      setView('list')
+      setLoading(true)
+    }
   }, [])
 
   const openChat = async (other: User, myId?: string) => {
