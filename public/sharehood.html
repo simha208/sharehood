@@ -794,7 +794,59 @@ function deleteItem(i){
   renderScreen('myitems');
 }
 function editItem(i){
-  toast('עריכת פריטים בקרוב!');
+  const items=getUserItems();
+  const item=items[i];
+  if(!item)return;
+  // create modal overlay
+  const modal=document.createElement('div');
+  modal.id='edit-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;';
+  modal.innerHTML=`
+  <div style="background:#fff;border-radius:20px;padding:28px;width:480px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.15);" dir="rtl">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;color:#111827;">עריכת פריט</h2>
+      <button onclick="document.getElementById('edit-modal').remove()" style="border:none;background:none;cursor:pointer;font-size:22px;color:#6B7280;">✕</button>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#1F2937;margin-bottom:6px;">שם הפריט</label>
+      <input id="edit-title" type="text" value="${item.title}" style="width:100%;padding:10px 14px;border:1.5px solid #DDE1E9;border-radius:12px;font-size:14px;font-family:Inter,sans-serif;outline:none;"/>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#1F2937;margin-bottom:6px;">קטגוריה</label>
+      <select id="edit-cat" style="width:100%;padding:10px 14px;border:1.5px solid #DDE1E9;border-radius:12px;font-size:14px;font-family:Inter,sans-serif;outline:none;background:#fff;">
+        <option value="tools" ${item.cat==='tools'?'selected':''}>כלי עבודה</option>
+        <option value="books" ${item.cat==='books'?'selected':''}>ספרים</option>
+        <option value="sports" ${item.cat==='sports'?'selected':''}>ספורט</option>
+        <option value="tech" ${item.cat==='tech'?'selected':''}>טכנולוגיה</option>
+        <option value="home" ${item.cat==='home'?'selected':''}>לבית</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#1F2937;margin-bottom:6px;">מיקום</label>
+      <input id="edit-loc" type="text" value="${item.loc}" style="width:100%;padding:10px 14px;border:1.5px solid #DDE1E9;border-radius:12px;font-size:14px;font-family:Inter,sans-serif;outline:none;"/>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#1F2937;margin-bottom:6px;">תיאור</label>
+      <textarea id="edit-desc" rows="3" style="width:100%;padding:10px 14px;border:1.5px solid #DDE1E9;border-radius:12px;font-size:14px;font-family:Inter,sans-serif;outline:none;resize:vertical;">${item.desc||''}</textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button onclick="document.getElementById('edit-modal').remove()" style="padding:12px;border-radius:12px;border:1.5px solid #DDE1E9;background:#fff;font-size:14px;font-weight:600;cursor:pointer;">ביטול</button>
+      <button onclick="saveEdit(${i})" style="padding:12px;border-radius:12px;border:none;background:#18A873;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">שמור שינויים</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function saveEdit(i){
+  const items=getUserItems();
+  items[i].title=document.getElementById('edit-title').value.trim()||items[i].title;
+  items[i].cat=document.getElementById('edit-cat').value;
+  items[i].loc=document.getElementById('edit-loc').value.trim()||items[i].loc;
+  items[i].desc=document.getElementById('edit-desc').value.trim();
+  saveUserItems(items);
+  document.getElementById('edit-modal').remove();
+  toast('הפריט עודכן בהצלחה! ✓','success');
+  renderScreen('myitems');
 }
 
 function screenAddItem(){
@@ -848,13 +900,23 @@ function handleImg(input){
   if(input.files&&input.files[0]){
     const file=input.files[0];
     const zone=document.getElementById('upload-zone');
-    const label=document.getElementById('upload-label');
     zone.classList.add('has-img');
-    label.textContent='תמונה נבחרה: '+file.name;
     const reader=new FileReader();
     reader.onload=e=>{
-      pendingImg=e.target.result;
-      zone.innerHTML='<img src="'+pendingImg+'" style="width:100%;height:140px;object-fit:cover;border-radius:12px;"/>';
+      // compress image before saving
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const MAX=400;
+        let w=img.width,h=img.height;
+        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+        else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        pendingImg=canvas.toDataURL('image/jpeg',0.7);
+        zone.innerHTML='<img src="'+pendingImg+'" style="width:100%;height:140px;object-fit:cover;border-radius:12px;"/>';
+      };
+      img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   }
