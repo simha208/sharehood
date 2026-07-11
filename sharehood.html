@@ -76,8 +76,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--g800);}
 .item-card{background:var(--white);border-radius:var(--rxl);overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:all .22s;border:1px solid transparent;}
 .item-card:hover{transform:translateY(-4px);box-shadow:var(--shm);border-color:var(--g100);}
 .item-card[style*="display:none"]{display:none!important;}
-.ic-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;position:relative;}
-.ic-img svg{width:52px;height:52px;opacity:.5;fill:none;}
+.ic-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.ic-img svg{width:52px;height:52px;opacity:.5;fill:none;flex-shrink:0;}
+.ic-img img{width:100%;height:160px;object-fit:cover;display:block;}
 .ic-tools{background:linear-gradient(135deg,#EEF2FF,#C7D2FE);}
 .ic-sports{background:linear-gradient(135deg,#F0FDF4,#BBF7D0);}
 .ic-books{background:linear-gradient(135deg,#FFF7ED,#FED7AA);}
@@ -306,43 +307,19 @@ const ITEMS=[
   {id:6,title:'מסור עגול Makita',cat:'tools',loc:'מרתף, חדר כלים',dist:'50 מ\'',owner:'יוסי לוי',ownerInitials:'יל',ownerColor:'#EEF2FF',ownerTextColor:'#6366F1',rating:'4.5',available:true,imgClass:'ic-tools',imgStroke:'#6366F1',desc:'מסור עגול 185מ"מ, 1200W. מגיע עם דיסק חיתוך לעץ.',liked:false},
 ];
 
-const CONVERSATIONS=[
-  {id:1,name:'ישראל ישראלי',initials:'יי',color:'#EEF2FF',textColor:'#6366F1',item:'מקדחת Bosch PSR 12',time:'10:42',unread:true,
-   messages:[
-    {from:'them',text:'היי! ראיתי שהמקדחה שלך פנויה — אפשר להשאיל ל-3 ימים?',time:'10:30'},
-    {from:'me',text:'כן, בכיף! מתי נוח לך לאסוף?',time:'10:35'},
-    {from:'them',text:'מחר בבוקר אחרי 9 בסדר?',time:'10:38'},
-    {from:'me',text:'מושלם, דירה 12 קומה 3 — תצלצל בדלת 😊',time:'10:40'},
-    {from:'them',text:'בוודאי, המקדחה פנויה מחר בבוקר. אני בבית מ-8!',time:'10:42'},
-  ]},
-  {id:2,name:'דני כהן',initials:'ד',color:'#FFF7ED',textColor:'#F97316',item:'אוהל קמפינג ל-4 אנשים',time:'אתמול',unread:false,
-   messages:[
-    {from:'them',text:'שלום! האוהל עדיין פנוי לסוף השבוע?',time:'14:00'},
-    {from:'me',text:'כן! מתי אתה צריך אותו?',time:'14:15'},
-    {from:'them',text:'מחר עד ראשון — 3 ימים',time:'14:20'},
-    {from:'me',text:'מעולה, בוא תאסוף היום בערב',time:'14:25'},
-    {from:'them',text:'תודה! אחזיר את האוהל ביום ראשון',time:'14:30'},
-  ]},
-  {id:3,name:'שרה לוי',initials:'ש',color:'#FFF1F2',textColor:'#F43F5E',item:'שואב אבק Dyson V11',time:'שני',unread:true,
-   messages:[
-    {from:'them',text:'אפשר לשאול את שואב האבק ביום שישי?',time:'09:00'},
-    {from:'me',text:'כן, אבל עד שבת בלבד',time:'09:30'},
-    {from:'them',text:'מושלם, תודה רבה!',time:'09:35'},
-  ]},
-  {id:4,name:'אורן שמש',initials:'א',color:'#F0F9FF',textColor:'#0EA5E9',item:'מקרן Epson',time:'ראשון',unread:false,
-   messages:[
-    {from:'them',text:'המקרן מוחזר, תודה רבה! עבד מעולה',time:'18:00'},
-    {from:'me',text:'שמח לשמוע! בהצלחה',time:'18:10'},
-  ]},
-];
+// conversations stored per-user in localStorage
+let CONVERSATIONS=[];
 
 /* ── Storage ── */
 function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]')}catch{return[]}}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
 function getSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}}
 function saveSession(u){if(u)sessionStorage.setItem(SESSION_KEY,JSON.stringify(u));else sessionStorage.removeItem(SESSION_KEY)}
-function getUserItems(){try{return JSON.parse(localStorage.getItem('sh-myitems-v3')||'[]')}catch{return[]}}
-function saveUserItems(i){localStorage.setItem('sh-myitems-v3',JSON.stringify(i))}
+function userKey(k){return k+'_'+(currentUser?.id||'guest');}
+function getUserItems(){try{return JSON.parse(localStorage.getItem(userKey('sh-items'))||'[]')}catch{return[]}}
+function saveUserItems(i){localStorage.setItem(userKey('sh-items'),JSON.stringify(i))}
+function getUserConvs(){try{return JSON.parse(localStorage.getItem(userKey('sh-convs'))||'[]')}catch{return[]}}
+function saveUserConvs(c){localStorage.setItem(userKey('sh-convs'),JSON.stringify(c))}
 
 /* ── Toast ── */
 function toast(msg,type=''){
@@ -371,7 +348,7 @@ function handleGoogleCredential(response){
     let existing=users.find(u=>u.googleId===user.googleId||u.email===user.email);
     if(existing){existing.picture=user.picture||existing.picture;existing.name=user.name;saveUsers(users);user=existing;}
     else{users.push(user);saveUsers(users);}
-    saveSession(user);currentUser=user;
+    saveSession(user);currentUser=user;loadUserData();
     toast('ברוך הבא, '+user.name+'! 🎉','success');
     setTimeout(()=>renderScreen('home'),500);
   }catch(e){toast('שגיאה בהתחברות עם Google','error');}
@@ -395,7 +372,7 @@ function doRegister(){
   const users=getUsers();
   if(users.find(u=>u.email===e)){err.textContent='האימייל כבר קיים במערכת';err.style.display='block';return;}
   const user={id:Date.now(),name:n,email:e,building:b,pass:p,karma:0,createdAt:new Date().toLocaleDateString('he-IL'),provider:'email',picture:null};
-  users.push(user);saveUsers(users);saveSession(user);currentUser=user;
+  users.push(user);saveUsers(users);saveSession(user);currentUser=user;loadUserData();
   document.getElementById('auth-ok').textContent='ברוך הבא, '+n+'!';
   document.getElementById('auth-ok').style.display='block';
   setTimeout(()=>renderScreen('home'),700);
@@ -409,7 +386,7 @@ function doLogin(){
   const users=getUsers();
   const user=users.find(u=>u.email===e&&u.pass===p);
   if(!user){err.textContent='אימייל או סיסמה שגויים';err.style.display='block';return;}
-  saveSession(user);currentUser=user;
+  saveSession(user);currentUser=user;loadUserData();
   document.getElementById('auth-ok').textContent='ברוך שובך, '+user.name+'!';
   document.getElementById('auth-ok').style.display='block';
   setTimeout(()=>renderScreen('home'),700);
@@ -539,8 +516,11 @@ function itemCard(item){
   const isUser=item.isUserItem;
   const clickAction=isUser?`renderScreen('myitems')`:`renderScreen('detail','${item.id}')`;
   return`<div class="item-card" data-cat="${item.cat}" data-title="${item.title.toLowerCase()}" onclick="${clickAction}">
-  <div class="ic-img ${imgClass}" style="position:relative;">
-    ${sv(svgPath,'stroke="'+(item.imgStroke||'#18A873')+'" stroke-width="1.5"',52,52)}
+  <div class="ic-img ${item.image?'':imgClass}" style="position:relative;${item.image?'background:none;padding:0;':''}">
+    ${item.image
+      ?`<img src="${item.image}" style="width:100%;height:160px;object-fit:cover;display:block;"/>`
+      :sv(svgPath,'stroke="'+(item.imgStroke||'#18A873')+'" stroke-width="1.5"',52,52)
+    }
     ${isUser
       ?`<span class="avail badge" style="position:absolute;top:10px;right:10px;background:#E8F8F1;color:#18A873;">הפריט שלי</span>`
       :`<button class="fav-btn${item.liked?' liked':''}" onclick="event.stopPropagation();toggleFav('${item.id}',this)">${sv(ICONS.heart,'fill="'+(item.liked?'#EF4444':'none')+'" stroke="'+(item.liked?'#EF4444':'#9CA3AF')+'"',14,14)}</button>`
@@ -555,7 +535,7 @@ function itemCard(item){
       ${isUser
         ?`<button class="borrow-btn" style="background:var(--brand-light);color:var(--brand);" onclick="event.stopPropagation();renderScreen('myitems')">נהל</button>`
         :item.available
-          ?`<button class="borrow-btn" onclick="event.stopPropagation();toast('בקשה נשלחה ל${item.owner}! 📩','success')">שאל</button>`
+          ?`<button class="borrow-btn" onclick="event.stopPropagation();requestBorrow(event,'${item.title}','${item.owner}','${item.ownerInitials}','${item.ownerColor}','${item.ownerTextColor}')">שאל</button>`
           :`<span class="badge b-amber">תפוס</span>`
       }
     </div>
@@ -723,6 +703,28 @@ function screenMessages(){
 </div></div></div>`;
 }
 
+function requestBorrow(e,title,owner,initials,color,textColor){
+  e.stopPropagation();
+  // check if conv already exists
+  const existing=CONVERSATIONS.find(c=>c.item===title);
+  if(existing){activeChat=existing.id;renderScreen('messages');return;}
+  const conv={
+    id:Date.now(),
+    name:owner,
+    initials:initials,
+    color:color,
+    textColor:textColor,
+    item:title,
+    time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),
+    unread:false,
+    messages:[{from:'me',text:'היי! אני מעוניין לשאול את '+title+'. האם הפריט פנוי?',time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}]
+  };
+  CONVERSATIONS.unshift(conv);
+  saveUserConvs(CONVERSATIONS);
+  activeChat=conv.id;
+  toast('שיחה נפתחה עם '+owner+'!','success');
+  renderScreen('messages');
+}
 function sendMsg(){
   const input=document.getElementById('chat-input');
   if(!input||!input.value.trim()||!activeChat)return;
@@ -731,6 +733,7 @@ function sendMsg(){
   if(!conv)return;
   conv.messages.push({from:'me',text,time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})});
   conv.unread=false;
+  saveUserConvs(CONVERSATIONS);
   input.value='';
   const msgs=document.getElementById('chat-msgs');
   if(msgs){
@@ -740,14 +743,6 @@ function sendMsg(){
     msgs.appendChild(bubble);
     msgs.scrollTop=msgs.scrollHeight;
   }
-  // simulate reply after 1.5s
-  setTimeout(()=>{
-    const replies=['תודה! אני אחזור אליך בהקדם 😊','מעולה, נתאם!','בסדר גמור','אני אבדוק ואחזור אליך'];
-    const reply=replies[Math.floor(Math.random()*replies.length)];
-    conv.messages.push({from:'them',text:reply,time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})});
-    const m=document.getElementById('chat-msgs');
-    if(m){const b=document.createElement('div');b.className='bubble them';b.textContent=reply;m.appendChild(b);m.scrollTop=m.scrollHeight;}
-  },1500);
 }
 
 function filterConvs(val){
@@ -849,12 +844,20 @@ function screenAddItem(){
 </div>`,'myitems');
 }
 
+let pendingImg=null;
 function handleImg(input){
   if(input.files&&input.files[0]){
+    const file=input.files[0];
     const zone=document.getElementById('upload-zone');
     const label=document.getElementById('upload-label');
     zone.classList.add('has-img');
-    label.textContent='תמונה נבחרה: '+input.files[0].name;
+    label.textContent='תמונה נבחרה: '+file.name;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      pendingImg=e.target.result;
+      zone.innerHTML='<img src="'+pendingImg+'" style="width:100%;height:140px;object-fit:cover;border-radius:12px;"/>';
+    };
+    reader.readAsDataURL(file);
   }
 }
 
@@ -867,7 +870,7 @@ function submitItem(){
   err.style.display='none';
   if(!title||!cat||!loc){err.textContent='נא למלא שם פריט, קטגוריה ומיקום';err.style.display='block';return;}
   const items=getUserItems();
-  items.push({title,cat,loc,desc,available:true,createdAt:new Date().toLocaleDateString('he-IL')});
+  items.push({title,cat,loc,desc,available:true,image:pendingImg||null,createdAt:new Date().toLocaleDateString('he-IL')});pendingImg=null;
   saveUserItems(items);
   if(currentUser){currentUser.karma=(currentUser.karma||0)+10;saveSession(currentUser);}
   document.getElementById('add-ok').textContent='הפריט פורסם בהצלחה! +10 נקודות קארמה 🎉';
@@ -1003,9 +1006,12 @@ function renderAuth(mode){
 }
 
 /* ── Init ── */
+function loadUserData(){
+  CONVERSATIONS=getUserConvs();
+}
 function init(){
   const s=getSession();
-  if(s){currentUser=s;renderScreen('home');}
+  if(s){currentUser=s;loadUserData();renderScreen('home');}
   else renderAuth('login');
   setTimeout(initGSI,200);
 }
